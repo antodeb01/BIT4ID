@@ -1,9 +1,15 @@
 
-# python3.6
-import MISURATION as M 
+import json
+import datetime
+import DB as db
+import dateutil.parser
+import re
 import random
 import json
 from paho.mqtt import client as mqtt_client
+from sqlalchemy.orm import Session
+
+
 
 broker = '127.17.0.1'
 port = 1883
@@ -34,13 +40,37 @@ def subscribe(client: mqtt_client):
         Payloads.append(msg.payload.decode())
     client.subscribe(topic)
     client.on_message = on_message
-def     
+
+
+def date_hook(json_dict):
+    for (key, value) in json_dict.items():
+        if type(value) is str and re.match('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d*$', value):
+            json_dict[key] = dateutile.parser.parse(value)
+        elif type(value) is str and re.match('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', value):
+            json_dict[key] = dateutil.parser.parse(value)
+        else:
+            pass
+    return json_dict 
+
+
+def misuration_SAVER(lst: list,session):
+    while lst:
+        jobj=lst[0]
+        obj=json.loads(jobj,object_hook=date_hook)
+        misuration = db.Misuration(Date=obj.get("datetime"),Time=obj.get("datetime").time(),CO2=obj.get("CO2"),Temperature=obj.get("Temperature"),Humidity = obj.get("Humidity"))
+        lst.pop(0)
+        session.add(misuration)
+        session.commit()
+
+
 
 
 def run():
-    DB_init()
-    client = connect_mqtt()
-    subscribe(client)
+    session=Session(db.engine) #open a session with db
+    client = connect_mqtt() #connect to mqtt broker
+    subscribe(client) #invoke the subscribe method: receive payloads from broker decode and save it in a queue
+    while True:
+        misuration_SAVER(Payloads,session) #extract elements from payloads queue and save it into db
     client.loop_forever()
    
 

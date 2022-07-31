@@ -1,35 +1,22 @@
-import psycopg2
+from sqlalchemy import Column, ForeignKey, Integer, String ,Float,Date,Time,Sequence
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy import insert
+from sqlalchemy import select
 
-def DB_init():
-    con = psycopg2.connect(database="postgres", user="postgres", password="bitlab", host="127.0.0.1", port="5432")
-    print("Database opened successfully")
-    cur = con.cursor()
 
-    cur.execute('''CREATE TABLE Misuration(ID INT PRIMARY KEY NOT NULL,CO2  FLOAT  NOT NULL,TEMPERATURE  INT   NOT NULL,HUMIDITY   FLOAT); ''')
-    print("Table created successfully")
-    con.commit()
-    con.close()
-def insert_intodb(id:int ,CO2: float,Temperature :float,Humidity: float):
-    con = psycopg2.connect(database="postgres", user="postgres", password="bitlab", host="127.0.0.1", port="5432")
-    print("Database opened successfully")
-    cur = con.cursor()
-    cur.execute(f'''INSERT INTO MISURATION(ADMISSION,CO2,TEMPERATURE,HUMIDITY) VALUES ({id},{CO2},{Temperature},{Humidity});''')
-    con.commit()
-    print("Values succesfully committed")
-    con.close()
-def DB_query():
-    con = psycopg2.connect(database="postgres", user="postgres", password="bitlab", host="127.0.0.1", port="5432")
-    print("Database opened successfully")
-    cur = con.cursor()
-    cur.execute("SELECT* from Misuration")
-    rows = cur.fetchall()
 
-    for row in rows:
-        
-        print("id =", row[0])
-        print("CO2=", row[1])
-        print("TEMPERATURE =", row[2])
-        print("HUMIDITY =", row[3], "n")
+engine= create_engine('postgresql://postgres:bit4id@localhost:5432/postgres')
+Base=declarative_base()
+USER_ID_SEQ = Sequence('user_id_seq')
+class Misuration(Base):
+    __tablename__ = 'Misuration'
+    id=Column(Integer,USER_ID_SEQ,primary_key=True,server_default=USER_ID_SEQ.next_value())
+    Date= Column(Date)
+    Time=Column(Time)
+    CO2=Column(Float)
+    Temperature = Column(Integer)
+    Humidity = Column(Float)
 
-    print("Operation done successfully")
-    con.close()    
+Base.metadata.create_all(engine)
+   
