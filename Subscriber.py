@@ -8,11 +8,16 @@ import random
 import json
 from paho.mqtt import client as mqtt_client
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+from os import getenv
 
 
 
-broker = '127.17.0.1'
-port = 1883
+load_dotenv()
+
+
+broker = getenv("MQTT_BROKER")
+port = int(getenv("MQTT_PORT"))
 topic = "sensors/data"
 client_id = 'emqx_Njk0MT'
 username = 'admin'
@@ -28,7 +33,7 @@ def connect_mqtt() -> mqtt_client:
             print("Failed to connect, return code %d\n", rc)
 
     client = mqtt_client.Client(client_id)
-    #client.username_pw_set(username, password)
+    client.username_pw_set(username, password)
     client.on_connect = on_connect
     client.connect(broker, port)
     return client

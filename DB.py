@@ -3,10 +3,12 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy import insert
 from sqlalchemy import select
+from dotenv import load_dotenv
+from os import getenv
 
 
-
-engine= create_engine('postgresql://postgres:bit4id@localhost:5432/postgres')
+load_dotenv()
+engine= create_engine(f'postgresql://{getenv("DB_USER")}:{getenv("DB_PASSWORD")}@{getenv("DB_HOST")}:{getenv("DB_PORT")}/{getenv("DB_NAME")}')
 Base=declarative_base()
 USER_ID_SEQ = Sequence('user_id_seq')
 class Misuration(Base):

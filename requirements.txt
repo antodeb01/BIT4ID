@@ -4,3 +4,5 @@ python-dateutil==2.8.2
 regex==2022.7.25
 six==1.16.0
 SQLAlchemy==1.4.39
+psycopg2-binary==2.9.3
+python-dotenv=0.20.0
