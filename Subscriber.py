@@ -19,10 +19,8 @@ load_dotenv()
 broker = getenv("MQTT_BROKER")
 port = int(getenv("MQTT_PORT"))
 topic = "sensors/data"
-client_id = 'emqx_Njk0MT'
-username = 'admin'
-password = 'public'
-Payloads=[]
+
+
 
 
 def connect_mqtt() -> mqtt_client:
@@ -32,8 +30,7 @@ def connect_mqtt() -> mqtt_client:
         else:
             print("Failed to connect, return code %d\n", rc)
 
-    client = mqtt_client.Client(client_id)
-    client.username_pw_set(username, password)
+    client = mqtt_client.Client() 
     client.on_connect = on_connect
     client.connect(broker, port)
     return client
@@ -41,11 +38,12 @@ def connect_mqtt() -> mqtt_client:
 
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
-        print(f"Received {json.loads(msg.payload.decode())}` from `{msg.topic}` topic")
-        Payloads.append(msg.payload.decode())
+        print(f"Received {msg.payload.decode()}` from `{msg.topic}` topic")
+        session=Session(db.engine)
+        misuration_SAVER(msg.payload.decode(),session)
     client.subscribe(topic)
-    client.on_message = on_message
-
+    client.on_message=on_message
+    
 
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
@@ -58,24 +56,23 @@ def date_hook(json_dict):
     return json_dict 
 
 
-def misuration_SAVER(lst: list,session):
-    while lst:
-        jobj=lst[0]
-        obj=json.loads(jobj,object_hook=date_hook)
-        misuration = db.Misuration(Date=obj.get("datetime"),Time=obj.get("datetime").time(),CO2=obj.get("CO2"),Temperature=obj.get("Temperature"),Humidity = obj.get("Humidity"))
-        lst.pop(0)
-        session.add(misuration)
-        session.commit()
+def misuration_SAVER(msg,session):
+         
+    obj=json.loads(msg)
+    misuration = db.Misuration(Date=str(datetime.datetime.now()),Time=str(datetime.datetime.now().time()),CO2=obj.get("CO2"),Temperature=obj.get("Temperature"),Humidity = obj.get("Humidity"))
+    
+    session.add(misuration)
+    session.commit()
+
 
 
 
 
 def run():
-    session=Session(db.engine) #open a session with db
     client = connect_mqtt() #connect to mqtt broker
+     
     subscribe(client) #invoke the subscribe method: receive payloads from broker decode and save it in a queue
-    while True:
-        misuration_SAVER(Payloads,session) #extract elements from payloads queue and save it into db
+    
     client.loop_forever()
    
 
