@@ -10,7 +10,7 @@ from paho.mqtt import client as mqtt_client
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from os import getenv
-
+import time
 
 
 load_dotenv()
@@ -69,7 +69,7 @@ def misuration_SAVER(msg,session):
 
 
 def run():
-    for i in range(5):
+    for i in range(10):
         try:
 
             db.db_connect()
@@ -77,7 +77,8 @@ def run():
         except:
             time.sleep(10)
             print(f"{i} try to connect")    
-              
+    else:
+        raise Exception      
     client = connect_mqtt() #connect to mqtt broker
      
     subscribe(client) #invoke the subscribe method: receive payloads from broker decode and save it in a queue
