@@ -69,6 +69,15 @@ def misuration_SAVER(msg,session):
 
 
 def run():
+    for i in range(5):
+        try:
+
+            db.db_connect()
+            break
+        except:
+            time.sleep(10)
+            print(f"{i} try to connect")    
+              
     client = connect_mqtt() #connect to mqtt broker
      
     subscribe(client) #invoke the subscribe method: receive payloads from broker decode and save it in a queue

@@ -4,7 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy import insert
 from sqlalchemy import select
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 from os import getenv
+import time
+import datetime
 
 
 load_dotenv()
@@ -20,5 +23,25 @@ class Misuration(Base):
     Temperature = Column(Integer)
     Humidity = Column(Float)
 
-Base.metadata.create_all(engine)
-   
+
+
+def db_connect():
+    
+
+    Base.metadata.create_all(engine)
+    print("Table created succesfully")
+    session=Session(engine)
+    mis=Misuration(Date=str(datetime.datetime.now()),Time=str(datetime.datetime.now().time()),CO2=0.0,Temperature=0.0,Humidity=0.0)
+    print("Misuration object created")
+    session.add(mis)
+    print("Misuration added succesfully")
+    session.commit()
+    print("Try table added succesfully ")
+    session.delete(mis)
+    session.commit()
+        
+    
+
+            
+        
+            
